@@ -158,7 +158,7 @@ function cag_CommandChat( ply, text, public )
 			table.insert(cag_CardsPickedThisRound, card)
 		end
 		
-		cag_GiveCards(ply)
+		--cag_GiveCards(ply)  -- dont give it now, wait until round start
 		return result
     end
 	
@@ -195,7 +195,6 @@ function cag_SetPlayerPlayStatus(ply, status)
 		if ply.PlayingCAG == true then
 			ply.PlayingCAG = false
 			ply.CurrentCAGCards = null
-			--cag_Players[ply:SteamID()] = nil
 			table.RemoveByValue(cag_Players, ply)
 		end
 		
@@ -207,7 +206,6 @@ function cag_SetPlayerPlayStatus(ply, status)
 		if ply.PlayingCAG == false then
 			ply.PlayingCAG = true
 			ply.CurrentCAGCards = null
-			--cag_Players[ply:SteamID()] = ply
 			table.insert(cag_Players, ply)
 			cag_GiveCards(ply)
 			
@@ -311,6 +309,13 @@ function cag_NewRound(forced)
 		cag_SimpleMsg("Waiting on ".. cag_MinPlayers - cnt .. " more player(s)...")
 		return
 	end
+	
+	
+	-- refresh cards as needed
+	for k,v in pairs(cag_Players) do
+		cag_GiveCards(v)
+	end
+	
 
 
 
@@ -326,7 +331,7 @@ function cag_NewRound(forced)
 				if (cag_BlackCards[cag_CurrentQuestionIdx].numAnswers > 1) then cag_CurrentQuestionIdx = nil end
 			end
 		
-	
+			cag_SimpleMsg("A new round has begun!")
 			cag_SimpleMsg("Here's your question:  " .. cag_BlackCards[cag_CurrentQuestionIdx].text)
 			cag_CardsPickedThisRound = {}
 			cag_SimpleMsg("Players, you have ".. cag_TimeToPickCard .." seconds to submit an answer.")
