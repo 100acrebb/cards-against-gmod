@@ -138,7 +138,7 @@ function cag_CommandChat( ply, text, public )
 	
 	if (string.lower(text) == "!cag players" or string.lower(text) == "!cag score") then
 		for k,v in pairs(cag_Players) do
-			if v ~= nil then cag_SimpleMsg(v:Name() + .. ", points = " .. v.AwesomePoints, ply) end
+			if v ~= nil then cag_SimpleMsg(v:Name() .. ", points = " .. v.AwesomePoints, ply) end
 		end
 		
 		cag_SimpleMsg("Current round is to ".. cag_PlayToPoints .. " points.", ply)
