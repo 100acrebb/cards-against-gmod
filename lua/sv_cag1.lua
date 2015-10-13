@@ -396,9 +396,10 @@ function cag_PickAWinner(idx)
 	ply.AwesomePoints = ply.AwesomePoints + 1
 	
 	if (ply.AwesomePoints >= cag_PlayToPoints) then
-		msg = "We have a winner! Nice job, " ..ply:Name() .. "!"
+		msg = "We have a winner!! Nice job, " ..ply:Name() .. "!"
 		
 		cag_SimpleMsg("A new game will start in ".. cag_TimeBetweenRounds .." seconds.")
+		cag_NewGame()
 		timer.Simple(cag_TimeBetweenRounds, function() cag_NewRound() end)
 	else
 	
@@ -406,7 +407,6 @@ function cag_PickAWinner(idx)
 		cag_SimpleMsg(msg)
 		
 		cag_SimpleMsg("The next round will start in ".. cag_TimeBetweenRounds .." seconds.")
-		cag_NewGame()
 		timer.Simple(cag_TimeBetweenRounds, function() cag_NewRound() end)
 	end
 end
