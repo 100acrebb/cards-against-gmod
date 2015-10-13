@@ -353,7 +353,7 @@ function cag_NewGame()
 	
 	for k,v in pairs(cag_Players) do
 		v.AwesomePoints = 0
-		v.CurrentCAGCards == null
+		v.CurrentCAGCards = null
 		cag_GiveCards(v)
 	end
 end
