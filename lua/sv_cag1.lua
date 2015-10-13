@@ -22,6 +22,7 @@ local cag_TimeBetweenRounds = 60
 local cag_TimeToPickCard = 45
 local cag_HideTextFromNonPlayers = false
 local cag_HideCmdsFromPlayers = true
+local cag_PlayToPoints = 10
 
 function cag_ProcessRawCardData()
 	print ("CAG1 loading data")
@@ -74,14 +75,15 @@ function cag_CommandChat( ply, text, public )
 	local result = text
 	if cag_HideCmdsFromPlayers == true then result = "" end
 	
-	if (string.sub(string.lower(text), 1, 9) == "!cag help" or string.lower(text) == "!cag") then
+	if (string.lower(text) == "!cag help" or string.lower(text) == "!cag") then
 		cag_SimpleMsg("Welcome to Cards Against GMod. All commands are chat-based...", ply)
 		cag_SimpleMsg("!cag - or - !cag help : this list", ply)
 		cag_SimpleMsg("!cag in : join the game", ply)
 		cag_SimpleMsg("!cag out : leave the game", ply)
 		cag_SimpleMsg("!cag cards : view your current cards", ply)
 		cag_SimpleMsg("!cag use # : submit card(s) as answers", ply)
-		cag_SimpleMsg("!cag players : list the current players", ply)
+		cag_SimpleMsg("!cag players : list the current players/scores", ply)
+		cag_SimpleMsg("!cag score : list the current players/scores", ply)
 		cag_SimpleMsg("!cag czar : list the current Card Czar", ply)
 		cag_SimpleMsg("!cag winner # : pick a winner (Card Czar only)", ply)
 		--cag_SimpleMsg("!cag status : current round status", ply)
@@ -100,29 +102,29 @@ function cag_CommandChat( ply, text, public )
 		return result
     end
 	
-	if (string.sub(string.lower(text), 1, 15) 	== "!cag forceround") then
+	if (string.lower(text) == "!cag forceround") then
 		cag_NewRound(true)
 		return result
     end
 	
-	if (string.sub(string.lower(text), 1, 15) 	== "!cag forcereset") then
+	if (string.lower(text) == "!cag forcereset") then
 		cag_Reset()
 		return result
     end
 	
-    if (string.sub(string.lower(text), 1, 7) == "!cag in" and ply.PlayingCAG == false) then
+    if (string.lower(text) == "!cag in" and ply.PlayingCAG == false) then
 		cag_SimpleMsg(ply:Nick().. " is now playing CaG. Say !cag for info." )
 		cag_SetPlayerPlayStatus(ply, true)
 		return result
     end
 	
-	if (string.sub(string.lower(text), 1, 8) 	== "!cag out" and ply.PlayingCAG == true) then
+	if (string.lower(text) == "!cag out" and ply.PlayingCAG == true) then
 		cag_SimpleMsg(ply:Nick().. " is no longer playing CaG" )
 		cag_SetPlayerPlayStatus(ply, false)
 		return result
     end
 	
-	if (string.sub(string.lower(text), 1, 10) == "!cag cards") then
+	if (string.lower(text) == "!cag cards") then
 		if (ply == cag_CurrentCzar and cag_AllowCzarToPlay == false) then
 			cag_SimpleMsg("But you're the Czar!", ply)
 			return result
@@ -134,10 +136,12 @@ function cag_CommandChat( ply, text, public )
 		return result
     end
 	
-	if (string.sub(string.lower(text), 1, 12) == "!cag players") then
+	if (string.lower(text) == "!cag players" or string.lower(text) == "!cag score") then
 		for k,v in pairs(cag_Players) do
-			if v ~= nil then cag_SimpleMsg(v:Name(), ply) end
+			if v ~= nil then cag_SimpleMsg(v:Name() + .. ", points = " .. v.AwesomePoints, ply) end
 		end
+		
+		cag_SimpleMsg("Current round is to ".. cag_PlayToPoints .. " points.", ply)
 		return result
     end
 	
@@ -162,7 +166,7 @@ function cag_CommandChat( ply, text, public )
 		return result
     end
 	
-	if (string.sub(string.lower(text), 1, 9) == "!cag czar") then
+	if (string.lower(text) == "!cag czar") then
 		if (cag_CurrentCzar == null) then
 			cag_SimpleMsg("There is currently no czar", ply)
 		else
@@ -195,7 +199,8 @@ function cag_SetPlayerPlayStatus(ply, status)
 		if ply.PlayingCAG == true then
 			ply.PlayingCAG = false
 			ply.CurrentCAGCards = null
-			table.RemoveByValue(cag_Players, ply)
+			ply.AwesomePoints = 0
+			cag_RemoveByValueEx(cag_Players, ply)
 		end
 		
 		if (ply == cag_CurrentCzar) then  -- damn!
@@ -206,6 +211,7 @@ function cag_SetPlayerPlayStatus(ply, status)
 		if ply.PlayingCAG == false then
 			ply.PlayingCAG = true
 			ply.CurrentCAGCards = null
+			ply.AwesomePoints = 0
 			table.insert(cag_Players, ply)
 			cag_GiveCards(ply)
 			
@@ -267,29 +273,7 @@ function cag_PickCzar()
 	end
 	cag_CurrentCzar = cag_Players[cag_CzarIdx]
 	
-	--[[idx = 0
-	for k,v in pairs(cag_Players) do
-		idx = idx + 1
-		if idx >= cag_CzarIdx and cag_CurrentCzar == nil and v ~= nil  then
-			cag_CurrentCzar = v;
-			cag_CzarIdx = idx
-		end
-	end
-	
-	if (cag_CurrentCzar == nil) then
-		cag_CzarIdx = 0
-		idx = 0
-		for k,v in pairs(cag_Players) do
-			idx = idx + 1
-			if idx >= cag_CzarIdx and cag_CurrentCzar == nil and v ~= nil then
-				cag_CurrentCzar = v;
-				cag_CzarIdx = idx
-			end
-		end
-	end]]
 
-		
-	
 	if (cag_CurrentCzar ~= nil) then
 		cag_SimpleMsg("The new Card Czar is "..cag_CurrentCzar:Name())
 		cag_CurrentStatus = 1 -- have a czar
@@ -388,10 +372,26 @@ end
 
 
 function cag_PickAWinner(idx)
-	local msg = "The Czar chooses:  "..cag_CardsPickedThisRound[idx].text ..". Congratulations, "..cag_CardsPickedThisRound[idx].PlayedBy:Name()
+	local ply = cag_CardsPickedThisRound[idx].PlayedBy
+	local msg = "The Czar chooses:  "..cag_CardsPickedThisRound[idx].text ..". Congratulations, "..ply:Name()
 	cag_SimpleMsg(msg)
-	cag_SimpleMsg("Next round in ".. cag_TimeBetweenRounds .." seconds.")
+	ply.AwesomePoints = ply.AwesomePoints + 1
+	
+	msg = "You now have "..ply.AwesomePoints.." Awesome Points. Say !cag score for score."
+	cag_SimpleMsg(msg)
+	
+	cag_SimpleMsg("The next round will start in ".. cag_TimeBetweenRounds .." seconds.")
 	timer.Simple(cag_TimeBetweenRounds, function() cag_NewRound() end)
+end
+
+
+
+function cag_RemoveByValueEx(ply)
+	for k,v in pairs(cag_Players) do
+		if v.Player == ply then
+			table.RemoveByValue(cag_Players, v)
+		end
+	end
 end
 
 cag_Init()
