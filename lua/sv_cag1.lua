@@ -233,19 +233,21 @@ function cag_GiveCards(ply)
 	end
 	
 	local cardsNeeded = 10 - table.Count(ply.CurrentCAGCards)
-	if (table.Count(cag_WhiteCardsAvailable) < cardsNeeded) then
-		print ("Oh shit! Not enough cards!")
-		cag_Reset()
-	end
 	
-	for i = 1, cardsNeeded do
-		idx = math.random(table.Count(cag_WhiteCardsAvailable))
-		table.insert(ply.CurrentCAGCards, cag_WhiteCardsAvailable[idx])
-		table.remove(cag_WhiteCardsAvailable, idx)
+	if (cardsNeeded > 0 ) then
+		if (table.Count(cag_WhiteCardsAvailable) < cardsNeeded) then
+			print ("Oh shit! Not enough cards!")
+			cag_Reset()
+		end
+		
+		for i = 1, cardsNeeded do
+			idx = math.random(table.Count(cag_WhiteCardsAvailable))
+			table.insert(ply.CurrentCAGCards, cag_WhiteCardsAvailable[idx])
+			table.remove(cag_WhiteCardsAvailable, idx)
+		end
+		
+		cag_SimpleMsg("You received " .. cardsNeeded .. " new white card(s). Say !cag cards to see them." , ply )
 	end
-	
-	print(cardsNeeded)
-	cag_SimpleMsg("You received " .. cardsNeeded .. " new white card(s). Say !cag cards to see them." , ply )
 	
 end
 
