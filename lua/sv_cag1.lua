@@ -200,7 +200,7 @@ function cag_SetPlayerPlayStatus(ply, status)
 			ply.PlayingCAG = false
 			ply.CurrentCAGCards = null
 			ply.AwesomePoints = 0
-			cag_RemoveByValueEx(cag_Players, ply)
+			table.RemoveByValue(cag_Players, ply)
 		end
 		
 		if (ply == cag_CurrentCzar) then  -- damn!
@@ -343,6 +343,22 @@ function cag_Reset()
 end
 
 
+function cag_NewGame()
+	
+	cag_WhiteCardsAvailable = table.Copy(cag_WhiteCards)
+	cag_CardsPickedThisRound = {}
+	cag_CurrentStatus = 1 -- waiting for players
+	cag_CurrentCzar = null
+	cag_CzarIdx = 0
+	
+	for k,v in pairs(cag_Players) do
+		v.AwesomePoints = 0
+		v.CurrentCAGCards == null
+		cag_GiveCards(v)
+	end
+end
+
+
 function cag_HandleAnswers()
 	local del = 1
 	
@@ -377,11 +393,20 @@ function cag_PickAWinner(idx)
 	cag_SimpleMsg(msg)
 	ply.AwesomePoints = ply.AwesomePoints + 1
 	
-	msg = "You now have "..ply.AwesomePoints.." Awesome Points. Say !cag score for score."
-	cag_SimpleMsg(msg)
+	if (ply.AwesomePoints >= cag_PlayToPoints) then
+		msg = "We have a winner! Nice job, " ..ply:Name() .. "!"
+		
+		cag_SimpleMsg("A new game will start in ".. cag_TimeBetweenRounds .." seconds.")
+		timer.Simple(cag_TimeBetweenRounds, function() cag_NewRound() end)
+	else
 	
-	cag_SimpleMsg("The next round will start in ".. cag_TimeBetweenRounds .." seconds.")
-	timer.Simple(cag_TimeBetweenRounds, function() cag_NewRound() end)
+		msg = "You now have "..ply.AwesomePoints.." Awesome Points. Say !cag score for score."
+		cag_SimpleMsg(msg)
+		
+		cag_SimpleMsg("The next round will start in ".. cag_TimeBetweenRounds .." seconds.")
+		cag_NewGame()
+		timer.Simple(cag_TimeBetweenRounds, function() cag_NewRound() end)
+	end
 end
 
 
